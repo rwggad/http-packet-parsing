@@ -1,0 +1,3 @@
+GET /mainpage?userid=19950119 HTTP/1.1
+Host: www.naver.com
+
