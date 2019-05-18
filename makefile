@@ -28,10 +28,10 @@ objects 			= $(foreach src,$(sources),$(obj_dir)/$(src:.c=.o))
 all : $(objects) exec
 
 exec : $(objects)
-	gcc -o exec $^			# Using Automatic Expanded Variable
+	gcc -o $(exec_dir)/exec $^			# Using Automatic Expanded Variable
 	
 clean :
-	rm -r $(obj_dir) exec
+	rm $(obj_dir)/* $(exec_dir)/*
 	
 $(obj_dir)/%.o : %.c
 	echo "Starting Pattern Rules ..."

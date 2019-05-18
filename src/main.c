@@ -5,7 +5,7 @@
 #include "../include/parsing_config.h"
 #include "../include/round_robin.h"
 
-#define CONFIG_FILE_PATH "resources/config_file"
+#define CONFIG_FILE_PATH "../resources/config_file"
 
 /**
  * packet과 config를 파싱하고 매칭된 서버 출력 함수
