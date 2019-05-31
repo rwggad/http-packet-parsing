@@ -1,21 +1,18 @@
-#include "../../include/parsing_config.h"
+#include "parsing_config.h"
 
 /**
- * configData 초기화
+ * configTable 초기화
  *
  * @param   token   초기화할 구조체의 메모리 주소
  * @return  void    반환 값 없음
 */
-void initConfig(config *configData)
+void initConfig(configTable *configTable)
 {
     /* param exception */
-    if (configData == NULL) {
-        printf("[Exception] param is null pointer. (initConfig function, configData)\n");
-        return;
-    }
+    PARAM_EXP_CHECK_NO_RETURN(configTable);
 
-    /* reset configData element */
-    initConfigLinkedList(&configData->configDataList);
+    /* reset configTable element */
+    initConfigList(&configTable->config);
     
     return;
 }

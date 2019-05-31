@@ -1,5 +1,4 @@
-#include "../include/main.h"
-#include "../include/token.h"
+#include "token.h"
 
 /**
  * token 초기화
@@ -102,7 +101,6 @@ int saveTokenValue(token *token, char *start, char *end)
     return saveResult;
 }
 
-
 /**
  * token의 값 출력 함수
  *
@@ -113,7 +111,7 @@ int saveTokenValue(token *token, char *start, char *end)
 void viewToken(const token *token)
 {
     /* declaration and init */
-    int tokenIndex = 0;
+    unsigned int tokenIndex = 0;
 
     /* param exception */
     if (token == NULL) {
@@ -137,62 +135,3 @@ void viewToken(const token *token)
 
     return;
 }
-
-/**
- * token, 문자열 비교
- *
- * @param   token       비교할 TOKEN
- * @prarm   string      비교할 문자열
- * @param   isDetail    대 소문자를 구별할 것인지
- * @return  int         비교 여부 반환
- *                      (IS_SAME 0,IS_DIFF -1)
- * */
-int compareTokenAndString(const token *token, const char* string, const bool isDetail)
-{
-    int stringSize = 0;
-    int compareResult = 0;
-    char tokenText = 0;
-    char stringText = 0;
-    unsigned int index = 0;
-
-    if (token == NULL) {
-        printf("[Exception] null pointer exception. (compareTokenAndString function, token)\n");
-        return FAIL;
-    }
-    if (string == NULL) {
-        printf("[Exception] null pointer exception. (compareTokenAndString function, string)\n");
-        return FAIL;
-    }
-    stringSize = strlen(string);
-    if (token->size != stringSize) { // 서로 길이가 다르면 애초에 같지 않음
-        return IS_DIFF;
-    }
-
-    compareResult = IS_SAME;
-    for (index = 0; index < stringSize; index++) { // 한 인덱스씩 확인하면서 같은지 체크
-        tokenText = token->value[index];
-        stringText = string[index];
-        if (isDetail == false) { // 대소문자 구별 없이 판단 할 시 소문자 기준으로 맞춤
-            tokenText = tolower(tokenText);
-            stringText = tolower(stringText);
-        }
-        if (tokenText != stringText) {
-            compareResult = IS_DIFF;
-            break;
-        }
-    }   
-    return compareResult;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-

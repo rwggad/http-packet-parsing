@@ -1,8 +1,8 @@
 #ifndef __TOKEN_H__
 #define __TOKEN_H__
+#include "main.h"
 
 //#define DEBUG_TOKEN_C
-
 #define IS_SAME     0 
 #define IS_DIFF     -1
 
@@ -21,6 +21,5 @@ void initToken(token *token);
 void deleteTokenValue(token *token); 
 int saveTokenValue(token *token, char *start, char *end);
 void viewToken(const token *token);
-int compareTokenAndString(const token *token, const char* string, const bool isDetail);
 
 #endif

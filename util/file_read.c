@@ -1,4 +1,4 @@
-#include "../include/file_read.h"
+#include "file_read.h"
 
 /**
  * file Read 함수

@@ -1,4 +1,4 @@
-#include "../../include/parsing_config.h"
+#include "parsing_config.h"
 #define MAX_LIST_NODE_COUNT 512
 
 /**
@@ -7,16 +7,13 @@
  * @param   target      element 를 초기화 시킬 list 구조체의 메모리 주소
  * @return  void        반환 값 없음
 */
-void initConfigLinkedList(c_list *target)
+void initConfigList(configList *target)
 {
     /* param exception */
-    if (target == NULL) {
-        printf("[Exception] param is null pointer. (initConfigLinkedList function, target)\n");
-        return;
-    }
+    PARAM_EXP_CHECK_NO_RETURN(target);
 
     /* set init */
-    memset(target, 0, sizeof(struct c_list));
+    memset(target, 0, sizeof(struct configTable));
 
 	return;
 }
@@ -30,10 +27,8 @@ void initConfigLinkedList(c_list *target)
  * */
 void initConfigDataSet(configDataSet *target)
 {
-    if (target == NULL) {
-        printf("[Exception] param is null pointer. (initConfigDatSet function, target)\n");
-        return;
-    }
+    /* param exception */
+    PARAM_EXP_CHECK_NO_RETURN(target);
     
     /* reset request elements */
     memset(target, 0, sizeof(struct configDataSet));
@@ -49,20 +44,14 @@ void initConfigDataSet(configDataSet *target)
  * @return  int     성공 여부 반환 (SUCCESS 1, FAIL -1)
  *
 */
-int pushBackConfigNode(c_list *list, configDataSet *data)
+int pushBackConfigNode(configList *list, configDataSet *data)
 {
-	c_node *newNode = NULL;
+	configNode *newNode = NULL;
 
-	/* exception */
-	if (list == NULL) {
-		printf("[Exception] param is null pointer. (backPushNode function, list) \n");
-		return FAIL;
-    }
-    if (data == NULL) {
-        printf("[Exception] param is null pointer. (backPushNode function, data) \n");
-        return FAIL;
-    }
-
+	/* param exception */
+    PARAM_EXP_CHECK(list, FAIL);
+	PARAM_EXP_CHECK(data, FAIL);
+    
     /* list에 저장될 수 있는 최대 갯수가 안넘었는지 확인*/
     if (list->listCount >= MAX_LIST_NODE_COUNT) { // 리스트의 최대 저장 갯수보다 커지면..
         printf("[Exception] Cannot insert more nodes. (current : %d, max : %d)\n", 
@@ -75,7 +64,7 @@ int pushBackConfigNode(c_list *list, configDataSet *data)
 #endif
 
 	/* new Node 생성 후 초기화 */
-	newNode = (c_node*)calloc(1, sizeof(c_node));
+	newNode = (configNode*)calloc(1, sizeof(configNode));
 	if (newNode == NULL) {
 		printf("[Exception] memory allocation fail. (backPushNode function, newNode)\n");
 		return FAIL;
@@ -108,16 +97,15 @@ int pushBackConfigNode(c_list *list, configDataSet *data)
  * @param   list    저장된 node 들을 출력 해주고 싶은 list의 메모리 주소
  * @return  void    반환값 없음
 */
-void viewConfigLinkedList(const c_list *list)
+void viewConfigList(const configList *list)
 {
+    unsigned int index = 0;
     unsigned int label = 0;
-    c_node *currentNode = NULL;
+    configNode *curNode = NULL;
+    ipSet *server = NULL;
 
 	/* param exception */
-	if (list == NULL) {
-		printf("[Exception] param is null pointer..! (list) \n");
-		return;
-	}
+	PARAM_EXP_CHECK_NO_RETURN(list);
 
 	/* list is empty ? */
     if (list->listCount == 0) {
@@ -125,24 +113,27 @@ void viewConfigLinkedList(const c_list *list)
     }
 
     /* view List items */
-    currentNode = list->head;
-    while (currentNode != NULL) {
-        printf("%d) [", label);
-        viewToken(&currentNode->data.matchType);
-        printf("] [");
-        viewToken(&currentNode->data.matchMethod);
-        printf("] [");
-        viewToken(&currentNode->data.matchingString);
-        printf("] [");
-        printf("%d] [%d] ", currentNode->data.runTimeIndex, currentNode->data.serverListSize);
-        for (int i = 0 ; i < currentNode->data.serverListSize; i++){
-            printf("[");
-            viewToken(&currentNode->data.serverList[i]);
-            printf("] ");
+    curNode = list->head;
+    while (curNode != NULL) {
+        printf("%d) [%d] [%d] [", (label + 1), curNode->data.type, curNode->data.method);
+        viewToken(&curNode->data.matchingString);
+        printf("] [ ");
+        for (index = 0 ; index < curNode->data.serverListSize; index++){
+            server = &curNode->data.serverList[index];
+            if (server->addr.sin_family == AF_INET6) {
+                char srcIpAddr[INET6_ADDRSTRLEN] = {0, };
+                inet_ntop(server->addr.sin_family, &server->addr.sin_addr.s_addr, srcIpAddr, sizeof(srcIpAddr));
+                printf("\n\t[ipv6 (%u)][%s:%u]\n", server->addr.sin_addr.s_addr, srcIpAddr, server->addr.sin_port);
+            } 
+            else {
+                char srcIpAddr[INET_ADDRSTRLEN] = {0, };
+                inet_ntop(server->addr.sin_family, &server->addr.sin_addr.s_addr, srcIpAddr, sizeof(srcIpAddr));
+                printf("\n\t[ipv4 (%u)][%s:%u]\n", server->addr.sin_addr.s_addr, srcIpAddr, server->addr.sin_port);
+            }
         }
-        printf("\n");
+        printf(" ]\n");
         label++;
-        currentNode = currentNode->next;
+        curNode = curNode->next;
     }
 
     return;
@@ -157,20 +148,11 @@ void viewConfigLinkedList(const c_list *list)
  * */
 void deleteConfigDataSet(configDataSet *target)
 {
-    int arrayIndex = 0;
     /* param exception */
-    if (target == NULL) {
-        printf("[Exception] param is null pointer. (deleteConfigDataSet function, target)\n");
-        return;
-    }
+    PARAM_EXP_CHECK_NO_RETURN(target);
 
     /* element allocation free */
-    deleteTokenValue(&target->matchType);
-    deleteTokenValue(&target->matchMethod);
     deleteTokenValue(&target->matchingString);
-    for (arrayIndex = 0; arrayIndex < target->serverListSize; arrayIndex++) {
-        deleteTokenValue(&target->serverList[arrayIndex]);
-    }
 
 #ifdef DEBUG_CONFIG_PARSING_LIST_C
     printf("### [DEBUG] delete nameValueSet struct..\n");
@@ -186,16 +168,13 @@ void deleteConfigDataSet(configDataSet *target)
  * @param   target      삭제하고 싶은 list의 메모리 주소
  * @return  void        반환값 없음
 */
-void deleteConfigLinkedList(c_list *target)
+void deleteConfigList(configList *target)
 {
-    c_node *currentNode = NULL;
-    c_node *nextNode = NULL;
+    configNode *curNode = NULL;
+    configNode *nextNode = NULL;
 
 	/* param exception */
-	if (target == NULL) {
-		printf("[Exception] param is null pointer. (deleteConfigLinkedList function, target) \n");
-		return;
-	}
+    PARAM_EXP_CHECK_NO_RETURN(target);
 
 	/* list is empty ? */
     if (target->listCount == 0) {
@@ -203,17 +182,17 @@ void deleteConfigLinkedList(c_list *target)
     }
 
     /* view List items */
-    currentNode = target->head;
+    curNode = target->head;
     while(1) {
-        nextNode = currentNode->next;
+        nextNode = curNode->next;
         /* current Node 삭제 */
-        deleteConfigDataSet(&currentNode->data);
-        free(currentNode);
-        currentNode = NULL;
+        deleteConfigDataSet(&curNode->data);
+        free(curNode);
+        curNode = NULL;
         if (nextNode == NULL) {
             break;
         }
-        currentNode = nextNode;
+        curNode = nextNode;
     }
 
 #ifdef DEBUG_CONFIG_PARSING_LIST_C

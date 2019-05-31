@@ -1,4 +1,4 @@
-#include "../../include/parsing_packet.h"
+#include "parsing_packet.h"
 
 /**
  * requestUri의 요소 중 메모리 할당된 것들을 해제 해줌 (token->value, List)
@@ -10,10 +10,7 @@
 void deleteUri(requestUri *target)
 {
     /* param exception */
-    if (target == NULL) {
-        printf("[Excpetion] param is null pointer. (deleteUri function, target) \n");
-        return;
-    }
+    PARAM_EXP_CHECK_NO_RETURN(target);
 
     /* element allocation free */
     deleteTokenValue(&target->absolutePath);
@@ -38,10 +35,7 @@ void deleteUri(requestUri *target)
 void deleteLine(requestLine *target)
 {
     /* param exception */
-    if (target == NULL) {
-        printf("[Excpetion] param is null pointer. (deleteLine function, target) \n");
-        return;
-    }
+    PARAM_EXP_CHECK_NO_RETURN(target);
 
     /* allocation free */
     deleteTokenValue(&target->method);
@@ -56,6 +50,27 @@ void deleteLine(requestLine *target)
 }
 
 /**
+ * request header 의 요소 중 메모리 할당된 것들을 해제 해줌 (garbageList)
+ *
+ * @param   target      메모리를 해제할 요소들을 담고 있는 구조체
+ * @return  void        반환 값 없음
+ *
+ * */
+void deleteHeader(requestHeader *target)
+{
+    /* param exception */
+    PARAM_EXP_CHECK_NO_RETURN(target);
+
+    /* element allocation free */
+    deleteRequestLinkedList(&target->header);
+
+#ifdef DEBUG_REQUEST_PARSING_FINAL_C 
+    printf("### [DEBUG] delete request struct..\n");
+#endif
+
+    return;
+}
+/**
  * request의 요소 중 메모리 할당된 것들을 해제 해줌 (token->value, List)
  *
  * @param   target      메모리를 해제할 요소들을 담고 있는 구조체
@@ -66,14 +81,11 @@ void deleteRequest(request *target)
 {
 
     /* param exception */
-    if (target == NULL) {
-        printf("[Excpetion] param is null pointer. (deleteRequest function, target\n");
-        return;
-    }
+    PARAM_EXP_CHECK_NO_RETURN(target);
 
     /* element allocation free */
     deleteLine(&target->line);
-    deleteRequestLinkedList(&target->header);
+    deleteHeader(&target->header);
     deleteTokenValue(&target->garbage);
 
 #ifdef DEBUG_REQUEST_PARSING_FINAL_C 

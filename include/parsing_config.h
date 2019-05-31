@@ -1,14 +1,18 @@
-#ifndef __C_PARSING_H__
-#define __C_PARSING_H__
+#ifndef __PARSING_CONFIG_H__
+#define __PARSING_CONFIG_H__
 #include "main.h"
 #include "token.h"
+#include "commonApi.h"
 
 //#define DEBUG_CONFIG_PARSING_INIT_C     
 //#define DEBUG_CONFIG_PARSING_FINAL_C    
 //#define DEBUG_CONFIG_PARSING_LIST_C     
-#define DEBUG_CONFIG_PARSING_C          
+//#define DEBUG_CONFIG_PARSING_C          
 
-#define MAX_SERVER_SIZE                 2048
+#define MIN_PORT_NUMBER_RANGE   0
+#define MAX_PORT_NUMBER_RANGE   65535
+
+#define MAX_SERVER_SIZE         2048
 
 // --------- enum ----------
 typedef enum elementParsingOrder {
@@ -18,56 +22,73 @@ typedef enum elementParsingOrder {
     ELEMENT_SERVER_LIST,
 }elementParsingOrder;
 
+typedef enum configMatchType {
+    TYPE_PATH = 0,
+    TYPE_HOST
+}matchType;
+
+typedef enum configMatchMethod {
+    METHOD_ANY = 0,
+    METHOD_START,
+    METHOD_END
+}matchMethod;
+
 // --------- struct ----------
+
+typedef struct ipSet {
+    struct sockaddr_in addr;
+}ipSet;
 
 /* list node dataSet */
 typedef struct configDataSet {
-    token matchType;
-    token matchMethod;
+    matchType type;
+    matchMethod method;
     token matchingString;
     unsigned int runTimeIndex;
     unsigned int serverListSize;
-    token serverList[MAX_SERVER_SIZE];
+    ipSet serverList[MAX_SERVER_SIZE];
 }configDataSet;
 
 /* list node */
-typedef struct c_node {
+typedef struct configNode {
     configDataSet data;
-    struct c_node *next;
-}c_node;
+    struct configNode *next;
+}configNode;
 
 /* list */
-typedef struct c_list {
-	c_node *head;
-    c_node *tail;
+typedef struct configList {
+	configNode *head;
+    configNode *tail;
 	unsigned int listCount;
-}c_list;
+}configList;
 
 /* confing data list */
-typedef struct config {
-    c_list configDataList;
-}config;
+typedef struct configTable {
+    configList config;
+}configTable;
 
 
 // --------- function ----------
 
 /* linkedList.c */
-int pushBackConfigNode(c_list *list, configDataSet *data);
-void viewConfigLinkedList(const c_list *list);
-void initConfigLinkedList(c_list *target);
-void deleteConfigLinkedList(c_list *target);
+int pushBackConfigNode(configList *list, configDataSet *data);
+void viewConfigList(const configList *list);
+void initConfigList(configList *target);
+void deleteConfigList(configList *target);
 
 void initConfigDataSet(configDataSet *target);
 void deleteConfigDataSet(configDataSet *target);
 
 /* init.c */
-void initConfig(config *configData);
+void initConfig(configTable *configTable);
 
 /* finalize.c */
-void deleteConfig(config *configData);
+void deleteConfig(configTable *configTable);
 
 /* parsing.c */
-int configParsing(const token *tokens, config *configData);
+int configParsing(const token *tokens, configTable *configList);
 int configElementParsing(char *start, char *end, configDataSet *dataSet);
 int configServerParsing(char *start, char *end, configDataSet *dataSet);
+int configIpPortParsing(char *start, char *end, ipSet *server);
+
 #endif
